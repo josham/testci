@@ -40,6 +40,13 @@ jobs:
           version-command: |
             PYTHONPATH=./src bash -c "python -c 'import testci; print(testci.__version__)'"
 
+      - name: Echo
+        run: |
+          python -c 'import testci; print(testci.__version__)'
+          cat src/testci/__init__.py
+          git rev-parse --verify --quiet HEAD^
+          git log
+
 #      - name: Publish Docs
 #        run: |
 #          COMMIT_DATE_EPOCH="$(git log -1 --pretty=%ct)"
