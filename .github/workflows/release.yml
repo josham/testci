@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2.3.4
+        with:
+          fetch-depth: 2
+
+      - name: Publish Docs
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+          tmpdir=`mktemp -d`
+          docroot="${tmpdir}/doc"
+          mv "doc/build/html" "${docroot}"
+          pushd "${docroot}"
+
+          git init
+          git remote add deploy "https://token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git checkout -b gh-pages
+
+          touch .nojekyll
+
+          git add .
+          SOURCE_DATE_EPOCH=`git log -1 --pretty=%ct`
+          msg="Updating Docs for commit ${{ github.sha }} made on `date -d"@${SOURCE_DATE_EPOCH}" --iso-8601=seconds` from ${{ github.ref }} by ${{ github.actor }}"
+          git commit -am "${msg}"
+
+          git push deploy gh-pages --force
+
+          popd
