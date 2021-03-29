@@ -38,6 +38,7 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@v2.0.1
         with:
           version-command: |
+            export PYTHONPATH="$PWD/src"
             bash -o pipefail -c "python -c 'import testci; print(testci.__version__)'"
 
 #      - name: Publish Docs
