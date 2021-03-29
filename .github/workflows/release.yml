@@ -32,7 +32,8 @@ jobs:
           git add .
           SOURCE_DATE_EPOCH=`git log -1 --pretty=%ct`
           msg="Updating Docs for commit ${{ github.sha }} made on `date -d"@${SOURCE_DATE_EPOCH}" --iso-8601=seconds` from ${{ github.ref }} by ${{ github.actor }}"
-          git commit -am "${msg}"
+          git commit -m "${msg}"
+          git log
           git push deploy gh-pages --force
 
           popd
