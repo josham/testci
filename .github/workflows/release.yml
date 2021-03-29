@@ -19,6 +19,7 @@ jobs:
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global init.defaultBranch master
 
           tmpdir=`mktemp -d`
           docroot="${tmpdir}/doc"
@@ -32,6 +33,8 @@ jobs:
           touch .nojekyll
 
           git add .
+          git status
+          ls -l .
           SOURCE_DATE_EPOCH=`git log -1 --pretty=%ct`
           msg="Updating Docs for commit ${{ github.sha }} made on `date -d"@${SOURCE_DATE_EPOCH}" --iso-8601=seconds` from ${{ github.ref }} by ${{ github.actor }}"
           git commit -am "${msg}"
