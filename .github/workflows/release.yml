@@ -42,7 +42,7 @@ jobs:
 
       - name: Echo
         run: |
-          python -c 'import testci; print(testci.__version__)'
+          PYTHONPATH=./src python -c 'import testci; print(testci.__version__)'
           cat src/testci/__init__.py
           git rev-parse --verify --quiet HEAD^
           git log
