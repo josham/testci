@@ -1,1 +1,1 @@
-__version__ = "2.1.0"
+from testci._version import __version__
