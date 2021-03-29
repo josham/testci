@@ -1,0 +1,9 @@
+name: testci-dev
+channels:
+  - conda-forge
+dependencies:
+  - pip
+  - sphinx
+  - sphinx_rtd_theme
+  - pip:
+    - sphinx_autodoc_typehints
