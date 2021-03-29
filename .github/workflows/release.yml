@@ -17,28 +17,22 @@ jobs:
 
       - name: Publish Docs
         run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          git config --global init.defaultBranch master
-
           tmpdir=`mktemp -d`
           docroot="${tmpdir}/doc"
           mv "doc/build/html" "${docroot}"
           pushd "${docroot}"
-
-          git init
-          git remote add deploy "https://token:${{ github.token }}@github.com/${{ github.repository }}.git"
-          git checkout -b gh-pages
-
           touch .nojekyll
 
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global init.defaultBranch master
+          git init
+          git remote add deploy "https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git"
+          git checkout -b gh-pages
           git add .
-          git status
-          ls -l .
           SOURCE_DATE_EPOCH=`git log -1 --pretty=%ct`
           msg="Updating Docs for commit ${{ github.sha }} made on `date -d"@${SOURCE_DATE_EPOCH}" --iso-8601=seconds` from ${{ github.ref }} by ${{ github.actor }}"
           git commit -am "${msg}"
-
           git push deploy gh-pages --force
 
           popd
