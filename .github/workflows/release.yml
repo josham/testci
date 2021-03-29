@@ -5,36 +5,61 @@ on:
     branches:
       - master
 
+env:
+  ENV_FILE: environment.yml
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2.3.4
         with:
           fetch-depth: 2
 
-      - name: Publish Docs
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: testci-dev
+          environment-file: ${{ env.ENV_FILE }}
+
+      - name: Check if there is a parent commit
+        id: check-parent-commit
         run: |
-          COMMIT_DATE_EPOCH="$(git log -1 --pretty=%ct)"
-          COMMIT_DATE="$(date -d"@${COMMIT_DATE_EPOCH}" --iso-8601=seconds)"
+          echo "::set-output name=sha::$(git rev-parse --verify --quiet HEAD^)"
 
-          tmpdir="$(mktemp -d)"
-          docroot="${tmpdir}/doc"
-          mv "doc/build/html" "${docroot}"
-          pushd "${docroot}"
-          touch .nojekyll
+      - name: Detect and tag new version
+        id: check-version
+        if: steps.check-parent-commit.outputs.sha
+        uses: salsify/action-detect-and-tag-new-version@v2.0.1
+        with:
+          version-command: |
+            bash -o pipefail -c "python -c 'import testci; print(testci.__version__)'"
 
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          git config --global init.defaultBranch master
-          git init
-          git remote add deploy "https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git"
-          git checkout -b gh-pages
-          git add .
-          msg="Updating Docs for commit ${{ github.sha }} made on ${COMMIT_DATE} from ${{ github.ref }} by ${{ github.actor }}"
-          git commit -m "${msg}"
-          git push deploy gh-pages --force
-
-          popd
+#      - name: Publish Docs
+#        run: |
+#          COMMIT_DATE_EPOCH="$(git log -1 --pretty=%ct)"
+#          COMMIT_DATE="$(date -d"@${COMMIT_DATE_EPOCH}" --iso-8601=seconds)"
+#
+#          tmpdir="$(mktemp -d)"
+#          docroot="${tmpdir}/doc"
+#          mv "doc/build/html" "${docroot}"
+#          pushd "${docroot}"
+#          touch .nojekyll
+#
+#          git config --global user.name "${{ github.actor }}"
+#          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+#          git config --global init.defaultBranch master
+#          git init
+#          git remote add deploy "https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git"
+#          git checkout -b gh-pages
+#          git add .
+#          msg="Updating Docs for commit ${{ github.sha }} made on ${COMMIT_DATE} from ${{ github.ref }} by ${{ github.actor }}"
+#          git commit -m "${msg}"
+#          git push deploy gh-pages --force
+#
+#          popd
